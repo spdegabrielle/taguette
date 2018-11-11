@@ -1,0 +1,21 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    "@id": "https://orcid.org/0000-0002-0524-2282",
+    "@type": "Person",
+    "email": "remirampin@gmail.com",
+    "name": "Rémi Rampin",
+    "affiliation": ""
+  ],
+  "identifier": "",
+  "codeRepository": "https://gitlab.com/remram44/taguette.git",
+  "datePublished": "2018-11-11",
+  "dateModified": "2018-11-11",
+  "dateCreated": "2018-11-11",
+  "description": "Document tagger for qualitative analysis",
+  "keywords": "qualitative, document, text, tagging, tags, highlights, notes, text-analysis, highlighting",
+  "license": "BSD",
+  "title": "taguette",
+  "version": "v0.3"
+}
