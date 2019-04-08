@@ -1,21 +1,48 @@
 {
   "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
-  "@type": "Code",
-  "author": [
-    "@id": "https://orcid.org/0000-0002-0524-2282",
-    "@type": "Person",
-    "email": "remirampin@gmail.com",
-    "name": "Rémi Rampin",
-    "affiliation": ""
-  ],
-  "identifier": "",
-  "codeRepository": "https://gitlab.com/remram44/taguette.git",
-  "datePublished": "2018-11-11",
-  "dateModified": "2018-11-11",
-  "dateCreated": "2018-11-11",
+  "@type": "SoftwareSourceCode",
+  "identifier": "Taguette",
   "description": "Document tagger for qualitative analysis",
-  "keywords": "qualitative, document, text, tagging, tags, highlights, notes, text-analysis, highlighting",
-  "license": "BSD",
-  "title": "taguette",
-  "version": "v0.3"
+  "name": "Taguette",
+  "author": [
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0002-0524-2282",
+      "email": "r@remirampin.com",
+      "givenName": "Rémi",
+      "familyName": "Rampin",
+      "affiliation": ""
+    }
+  ],
+  "maintainer": {
+    "@type": "Person",
+    "@id": "https://orcid.org/0000-0002-0524-2282",
+    "email": "r@remirampin.com",
+    "givenName": "Rémi",
+    "familyName": "Rampin",
+    "affiliation": ""
+  },
+  "codeRepository": "https://gitlab.com/remram44/taguette.git",
+  "issueTracker": "https://gitlab.com/remram44/taguette/issues",
+  "version": "0.5",
+  "datePublished": "2018-10-21",
+  "dateModified": "2019-03-23",
+  "dateCreated": "2018-10-21",
+  "keywords": ["qualitative", "document", "text", "tagging", "tags", "highlights", "notes", "text-analysis", "highlighting"],
+  "license": "https://spdx.org/licenses/BSD-3-Clause.html",
+  "programmingLanguage": [
+    {
+      "@type": "ComputerLanguage",
+      "name": "Javascript",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+    },
+    {
+      "@type": "ComputerLanguage",
+      "name": "Python",
+      "version": "3.6",
+      "url": "https://www.python.org/"
+    }
+  ],
+  "isAccessibleForFree": true,
+  "sameAs": "https://www.taguette.org/"
 }
