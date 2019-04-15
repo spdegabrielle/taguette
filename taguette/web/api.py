@@ -478,61 +478,88 @@ class MembersUpdate(BaseHandler):
     @api_auth
     def patch(self, project_id):
         PROM_API.labels('members_update').inc()
+        obj = self.get_json()
         project, privileges = self.get_project(project_id)
-        if not privileges.can_edit_members():
+
+        # Special case: you are always allowed to remove yourself
+        if (obj.keys() == {self.current_user} and
+                not obj[self.current_user]):
+            admins = (
+                self.db.query(database.ProjectMember)
+                .filter(database.ProjectMember.project_id == project.id)
+                .filter(database.ProjectMember.privileges ==
+                        database.Privileges.ADMIN)
+            ).all()
+            admins = set(member.user_login for member in admins)
+            if admins.issubset(set(self.current_user)):
+                self.set_status(400)
+                return self.send_json({'error': "There must be one admin"})
+            (
+                self.db.query(database.ProjectMember)
+                .filter(database.ProjectMember.project_id == project.id)
+                .filter(database.ProjectMember.user_login == self.current_user)
+            ).delete()
+            cmd = database.Command.member_remove(
+                self.current_user, project.id,
+                self.current_user,
+            )
+            self.db.add(cmd)
+            commands = [cmd]
+        elif not privileges.can_edit_members():
             self.set_status(403)
             return self.send_json({'error': "Unauthorized"})
-
-        # Get all members
-        members = (
-            self.db.query(database.ProjectMember)
-            .filter(database.ProjectMember.project_id == project.id)
-        ).all()
-        members = {member.user_login: member for member in members}
-
-        # Go over the JSON patch and update
-        obj = self.get_json()
-        commands = []
-        for login, user in obj.items():
-            login = validate.user_login(login)
-            if not user and login in members:
-                self.db.delete(members.pop(login))
-                cmd = database.Command.member_remove(
-                    self.current_user, project.id,
-                    login,
-                )
-                self.db.add(cmd)
-                commands.append(cmd)
-            else:
-                try:
-                    privileges = database.Privileges[user['privileges']]
-                except KeyError:
-                    self.set_status(400)
-                    return self.send_json({'error': "Invalid privileges %r" %
-                                                    user.get('privileges')})
-                if login in members:
-                    members[login].privileges = privileges
-                else:
-                    member = database.ProjectMember(project=project,
-                                                    user_login=login,
-                                                    privileges=privileges)
-                    members[login] = member
-                    self.db.add(member)
-                cmd = database.Command.member_add(
-                    self.current_user, project.id,
-                    login, privileges,
-                )
-                self.db.add(cmd)
-                commands.append(cmd)
-
-        # Check that there are still admins
-        for member in members.values():
-            if member.privileges == database.Privileges.ADMIN:
-                break
         else:
-            self.db.rollback()
-            self.set_status(400)
-            return self.send_json({'error': "There must be one admin"})
+            # Get all members
+            members = (
+                self.db.query(database.ProjectMember)
+                .filter(database.ProjectMember.project_id == project.id)
+            ).all()
+            members = {member.user_login: member for member in members}
+
+            # Go over the JSON patch and update
+            commands = []
+            for login, user in obj.items():
+                login = validate.user_login(login)
+                if not user and login in members:
+                    self.db.delete(members.pop(login))
+                    cmd = database.Command.member_remove(
+                        self.current_user, project.id,
+                        login,
+                    )
+                    self.db.add(cmd)
+                    commands.append(cmd)
+                else:
+                    try:
+                        privileges = database.Privileges[user['privileges']]
+                    except KeyError:
+                        self.set_status(400)
+                        return self.send_json({
+                            'error': "Invalid privileges %r" %
+                                     user.get('privileges'),
+                        })
+                    if login in members:
+                        members[login].privileges = privileges
+                    else:
+                        member = database.ProjectMember(project=project,
+                                                        user_login=login,
+                                                        privileges=privileges)
+                        members[login] = member
+                        self.db.add(member)
+                    cmd = database.Command.member_add(
+                        self.current_user, project.id,
+                        login, privileges,
+                    )
+                    self.db.add(cmd)
+                    commands.append(cmd)
+
+            # Check that there are still admins
+            for member in members.values():
+                if member.privileges == database.Privileges.ADMIN:
+                    break
+            else:
+                self.db.rollback()
+                self.set_status(400)
+                return self.send_json({'error': "There must be one admin"})
 
         self.db.commit()
         for cmd in commands:
