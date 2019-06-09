@@ -168,6 +168,13 @@ class Register(BaseHandler):
                                register_error=self.gettext(e.message))
 
 
+class TermsOfService(BaseHandler):
+    PROM_PAGE.labels('tos').inc(0)
+
+    def get(self):
+        return self.render('tos.html')
+
+
 class Account(BaseHandler):
     PROM_PAGE.labels('account').inc(0)
 
