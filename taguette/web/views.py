@@ -172,7 +172,15 @@ class TermsOfService(BaseHandler):
     PROM_PAGE.labels('tos').inc(0)
 
     def get(self):
-        return self.render('tos.html')
+        tos_link = urlunparse([self.request.protocol,
+                               self.request.host,
+                               '/tos',
+                               '',
+                               '',
+                               ''])
+        return self.render('tos.html',
+                           app_host=self.request.host,
+                           tos_link=tos_link)
 
 
 class Account(BaseHandler):
