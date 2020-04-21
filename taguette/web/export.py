@@ -247,8 +247,10 @@ class ExportDocument(BaseHandler):
         PROM_EXPORT.labels('document', ext.lower()).inc()
         doc, _ = self.get_document(project_id, document_id, True)
 
-        highlights = merge_overlapping_ranges((hl.start_offset, hl.end_offset)
-                                              for hl in doc.highlights)
+        highlights = merge_overlapping_ranges(
+            (hl.start_offset, hl.end_offset, [])
+            for hl in doc.highlights
+        )
 
         html = self.render_string(
             'export_document.html',
