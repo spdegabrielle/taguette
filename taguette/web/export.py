@@ -253,7 +253,9 @@ class ExportDocument(BaseHandler):
         html = self.render_string(
             'export_document.html',
             name=doc.name,
-            contents=Markup(extract.highlight(doc.contents, highlights)),
+            contents=Markup(
+                extract.highlight(doc.contents, highlights, show_tags=True),
+            ),
         )
         # Drop non-ASCII characters from the name
         name = doc.name.encode('ascii', 'ignore').decode('ascii') or None
