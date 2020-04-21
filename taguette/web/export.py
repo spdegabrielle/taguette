@@ -247,10 +247,22 @@ class ExportDocument(BaseHandler):
         PROM_EXPORT.labels('document', ext.lower()).inc()
         doc, _ = self.get_document(project_id, document_id, True)
 
-        highlights = merge_overlapping_ranges(
-            (hl.start_offset, hl.end_offset, [])
-            for hl in doc.highlights
-        )
+        tag = aliased(database.Tag)
+        hltag = aliased(database.HighlightTag)
+        highlights = (
+            self.db.query(database.Highlight)
+                .join(hltag, hltag.highlight_id == database.Highlight.id)
+                .join(tag, hltag.tag_id == tag.id)
+                .filter(tag.path.startswith(path))
+                .filter(database.Highlight.document_id == document_id)
+                .order_by(database.Highlight.start_offset)
+        ).all()
+
+        highlights = merge_overlapping_ranges((hl.start_offset, hl.end_offset, tags)
+                                              for hl in highlights)
+
+        highlights = merge_overlapping_ranges((hl.start_offset, hl.end_offset, [])
+                                              for hl in highlights)
 
         html = self.render_string(
             'export_document.html',
