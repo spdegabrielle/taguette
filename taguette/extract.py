@@ -104,11 +104,13 @@ def extract(html, start, end):
 
 
 @PROM_HIGHLIGHT_TIME.time()
-def highlight(html, highlights):
+def highlight(html, highlights, show_tags=False):
     """Highlight part of an HTML documents.
 
-    :param highlights: Iterable of (start, end) pairs, which are computed over
-        UTF-8 bytes and don't count HTML tags
+    :param highlights: Iterable of (start, end, tags) triples, which are
+        computed over UTF-8 bytes and don't count HTML tags
+    :param show_tags: Whether to show the tag names within brackets after each
+        highlight
     """
     highlights = iter(highlights)
     soup = BeautifulSoup(html, 'html5lib')
@@ -117,7 +119,7 @@ def highlight(html, highlights):
     node = soup
     highlighting = False
     try:
-        start, end = next(highlights)
+        start, end, tags = next(highlights)
         while True:
             if getattr(node, 'contents', None):
                 node = node.contents[0]
@@ -148,8 +150,15 @@ def highlight(html, highlights):
                             newnode.append(node)
                             node = newnode
                             if pos + nb == end:
+                                if show_tags:
+                                    comment = soup.new_tag(
+                                        'span',
+                                        attrs={'class': 'taglist'},
+                                    )
+                                    comment.string = ' [%s]' % ', '.join(tags)
+                                    newnode.insert_after(comment)
                                 highlighting = False
-                                start, end = next(highlights)
+                                start, end, tags = next(highlights)
                             break
                         elif highlighting:
                             left = node.string[:end - pos]
@@ -163,12 +172,20 @@ def highlight(html, highlights):
                             )
                             node.replace_with(newnode)
                             newnode.append(node)
+                            if show_tags:
+                                comment = soup.new_tag(
+                                    'span',
+                                    attrs={'class': 'taglist'},
+                                )
+                                comment.string = ' [%s]' % ', '.join(tags)
+                                newnode.insert_after(comment)
+                                newnode = comment
                             node = NavigableString(rest)
                             newnode.insert_after(node)
                             nb -= end - pos
                             pos = end
                             highlighting = False
-                            start, end = next(highlights)
+                            start, end, tags = next(highlights)
                         else:
                             break
 
