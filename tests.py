@@ -150,12 +150,26 @@ class TestMeasure(unittest.TestCase):
     def test_highlight(self):
         """Tests highlighting an HTML document."""
         html = '<p><u>Hello</u> there <i>World</i></p>'
+        highlights = [
+            (0, 1, ['tag1']), (2, 3, []),
+            (4, 8, ['tag1', 'tag2']), (10, 14, ['tag2']), (15, 17, ['tag1']),
+        ]
         self.assertEqual(
-            extract.highlight(html, [(0, 1), (2, 3),
-                                     (4, 8), (10, 14), (15, 17)])
+            extract.highlight(html, highlights)
             .replace('<span class="highlight">', '{')
             .replace('</span>', '}'),
             '<p><u>{H}e{l}l{o}</u>{ th}er{e }<i>{Wo}r{ld}</i></p>',
+        )
+
+        html = '<p><u>Hello</u> there <i>World</i></p>'
+        self.assertEqual(
+            extract.highlight(html, highlights, show_tags=True)
+            .replace('<span class="taglist"> [', '[')
+            .replace(']</span>', ']')
+            .replace('<span class="highlight">', '{')
+            .replace('</span>', '}'),
+            '<p><u>{H}[tag1]e{l}[]l{o}</u>{ th}[tag1, tag2]er{e }' +
+            '<i>{Wo}[tag2]r{ld}[tag1]</i></p>',
         )
 
 
